@@ -8,7 +8,6 @@
 </head>
 <body class="bg-gray-50">
     
-    <!-- Menu -->
     <div class="bg-gray-800 shadow-md mb-6 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
             <div class="flex gap-4">
@@ -26,20 +25,18 @@
     
     <div class="max-w-7xl mx-auto p-6">
         
-        <!-- Header -->
         <div class="bg-black rounded-lg shadow-lg p-6 mb-6 border-4 border-yellow-400">
             <h1 class="text-3xl font-bold text-yellow-400 mb-2">📊 Relatório Diário de Ordens</h1>
             <p class="text-yellow-400 text-sm" id="data-relatorio">UO Lisboa | E-REDES</p>
         </div>
         
-        <!-- Resumo Geral -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-                <h3 class="text-gray-500 text-sm font-semibold mb-2">TOTAL 24/01</h3>
+                <h3 class="text-gray-500 text-sm font-semibold mb-2">ANTERIOR</h3>
                 <p class="text-3xl font-bold text-gray-800" id="total-ontem">-</p>
             </div>
             <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-                <h3 class="text-gray-500 text-sm font-semibold mb-2">TOTAL 27/01</h3>
+                <h3 class="text-gray-500 text-sm font-semibold mb-2">HOJE</h3>
                 <p class="text-3xl font-bold text-gray-800" id="total-hoje">-</p>
             </div>
             <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
@@ -48,51 +45,12 @@
                 <p class="text-sm font-semibold mt-1" id="variacao-pct">-</p>
             </div>
             <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 border-l-4 border-green-700">
-                <h3 class="text-white text-sm font-semibold mb-2">✅ PASSARAM A REAL</h3>
+                <h3 class="text-white text-sm font-semibold mb-2">✅ CONCLUÍDAS</h3>
                 <p class="text-4xl font-bold text-white" id="total-real">-</p>
-                <p class="text-sm font-semibold mt-1 text-green-100">Concluídas desde 24/01</p>
+                <p class="text-sm font-semibold mt-1 text-green-100">Desde último update</p>
             </div>
         </div>
         
-        <!-- Top Mudanças -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-gray-200">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">🔄 Top 15 Mudanças de Status</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">#</th>
-                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">De → Para</th>
-                            <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">Quantidade</th>
-                        </tr>
-                    </thead>
-                    <tbody id="top-mudancas-tbody">
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- Variação por Ano -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-gray-200">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">📅 Comparação Ano a Ano</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Ano</th>
-                            <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">24/01</th>
-                            <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">27/01</th>
-                            <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">Variação</th>
-                            <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">%</th>
-                        </tr>
-                    </thead>
-                    <tbody id="anos-tbody">
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- Variação por Prestador -->
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-gray-200">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">🏢 Comparação por Prestador</h2>
             <div class="overflow-x-auto">
@@ -100,12 +58,12 @@
                     <thead class="bg-gray-100">
                         <tr>
                             <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Prestador</th>
-                            <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">24/01</th>
-                            <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">27/01</th>
+                            <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">Anterior</th>
+                            <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">Hoje</th>
                             <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">Variação</th>
                             <th class="px-4 py-2 text-right text-sm font-semibold text-gray-700">%</th>
-                            <th class="px-4 py-2 text-right text-sm font-semibold text-green-700 bg-green-50">✅ → REAL</th>
-                            <th class="px-4 py-2 text-right text-sm font-semibold text-green-700 bg-green-50">% REAL</th>
+                            <th class="px-4 py-2 text-right text-sm font-semibold text-green-700 bg-green-50">✅ Concluídas</th>
+                            <th class="px-4 py-2 text-right text-sm font-semibold text-green-700 bg-green-50">%</th>
                         </tr>
                     </thead>
                     <tbody id="prestadores-tbody">
@@ -117,10 +75,9 @@
     </div>
     
     <script>
-const RELATORIO = {"data":"27/01/2025","totais":{"ontem":29243,"hoje":29742,"diferenca":499},"mudancas":{"total":20,"para_real":1400,"para_anul":0,"para_nefe":0,"outras":20},"top_mudancas":[{"tipo":"OP → PC","quantidade":35},{"tipo":"OP → PEDP","quantidade":18},{"tipo":"PAMI → OP   CC","quantidade":13},{"tipo":"OP → OP   CC","quantidade":12},{"tipo":"PEDP → OP   CC","quantidade":10},{"tipo":"OP   CC → PEDP","quantidade":9},{"tipo":"PEDP → OP","quantidade":8},{"tipo":"OP   CC → PC","quantidade":8},{"tipo":"OP → ANEG","quantidade":7},{"tipo":"OP → OE","quantidade":5},{"tipo":"PC → OP   CC","quantidade":5},{"tipo":"OP → AIMP","quantidade":4},{"tipo":"OP → OE   CL","quantidade":4},{"tipo":"OE   CC   CL → PC","quantidade":2},{"tipo":"OE → PEDP","quantidade":2}],"anos":{"2026":{"ontem":18646,"hoje":18804,"diferenca":158,"variacao_pct":0.85},"2023":{"ontem":2215,"hoje":2217,"diferenca":2,"variacao_pct":0.09},"2025":{"ontem":5491,"hoje":5813,"diferenca":322,"variacao_pct":5.86},"2020":{"ontem":274,"hoje":274,"diferenca":0,"variacao_pct":0.0},"2024":{"ontem":1626,"hoje":1641,"diferenca":15,"variacao_pct":0.92},"2022":{"ontem":780,"hoje":782,"diferenca":2,"variacao_pct":0.26},"2021":{"ontem":211,"hoje":211,"diferenca":0,"variacao_pct":0.0}},"prestadores":{"CME Lisboa":{"ontem":16490,"hoje":16227,"diferenca":-263,"real":789,"pct_real":4.78},"Visabeira Loures":{"ontem":7821,"hoje":9192,"diferenca":1371,"real":374,"pct_real":4.78},"CME Setúbal":{"ontem":4932,"hoje":4323,"diferenca":-609,"real":236,"pct_real":4.79}},"real":{"total":1400,"por_prestador":{}}};
+const RELATORIO = {"data":"10/02/2026","totais":{"ontem":29742,"hoje":20326,"diferenca":-9416},"mudancas":{"total":0,"para_real":9416,"para_anul":0,"para_nefe":0,"outras":0},"top_mudancas":[{"tipo":"Concluídas/REAL","quantidade":9416}],"anos":{"2020":{"ontem":0,"hoje":248,"diferenca":0,"variacao_pct":0},"2021":{"ontem":0,"hoje":210,"diferenca":0,"variacao_pct":0},"2022":{"ontem":0,"hoje":761,"diferenca":0,"variacao_pct":0},"2023":{"ontem":0,"hoje":2137,"diferenca":0,"variacao_pct":0},"2024":{"ontem":0,"hoje":1585,"diferenca":0,"variacao_pct":0},"2025":{"ontem":0,"hoje":3864,"diferenca":0,"variacao_pct":0},"2026":{"ontem":0,"hoje":11521,"diferenca":0,"variacao_pct":0}},"prestadores":{"CME Lisboa":{"ontem":16227,"hoje":10586,"diferenca":-5641,"real":5641,"pct_real":34.76},"Visabeira Loures":{"ontem":9192,"hoje":6213,"diferenca":-2979,"real":2979,"pct_real":32.41},"CME Setúbal":{"ontem":4323,"hoje":3527,"diferenca":-796,"real":796,"pct_real":18.41}},"real":{"total":9416,"por_prestador":{}}};
 
 document.getElementById('data-relatorio').textContent = `Relatório de ${RELATORIO.data} | UO Lisboa | E-REDES`;
-
 document.getElementById('total-ontem').textContent = RELATORIO.totais.ontem.toLocaleString('pt-PT');
 document.getElementById('total-hoje').textContent = RELATORIO.totais.hoje.toLocaleString('pt-PT');
 document.getElementById('total-real').textContent = RELATORIO.real.total.toLocaleString('pt-PT');
@@ -133,42 +90,8 @@ const sinalPct = pct >= 0 ? '+' : '';
 
 variacaoEl.textContent = (diff >= 0 ? '+' : '') + diff.toLocaleString('pt-PT');
 variacaoEl.className = diff >= 0 ? 'text-3xl font-bold text-green-600' : 'text-3xl font-bold text-red-600';
-
 variacaoPctEl.textContent = `(${sinalPct}${pct.toFixed(2)}%)`;
 variacaoPctEl.className = diff >= 0 ? 'text-sm font-semibold mt-1 text-green-600' : 'text-sm font-semibold mt-1 text-red-600';
-
-const topMudancasTbody = document.getElementById('top-mudancas-tbody');
-RELATORIO.top_mudancas.forEach((m, i) => {
-    const tr = document.createElement('tr');
-    tr.className = i % 2 === 0 ? 'bg-white' : 'bg-gray-50';
-    tr.innerHTML = `
-        <td class="px-4 py-2 text-sm text-gray-600">${i + 1}</td>
-        <td class="px-4 py-2 text-sm text-gray-800 font-medium">${m.tipo}</td>
-        <td class="px-4 py-2 text-sm text-gray-800 text-right font-semibold">${m.quantidade}</td>
-    `;
-    topMudancasTbody.appendChild(tr);
-});
-
-const anosTbody = document.getElementById('anos-tbody');
-Object.entries(RELATORIO.anos).sort((a, b) => a[0].localeCompare(b[0])).forEach(([ano, dados]) => {
-    const tr = document.createElement('tr');
-    tr.className = 'border-b hover:bg-gray-50';
-    
-    const varClass = dados.diferenca > 0 ? 'text-green-600' : dados.diferenca < 0 ? 'text-red-600' : 'text-gray-600';
-    const sinal = dados.diferenca >= 0 ? '+' : '';
-    
-    const pctClass = dados.variacao_pct > 0 ? 'text-green-600' : dados.variacao_pct < 0 ? 'text-red-600' : 'text-gray-600';
-    const pctSinal = dados.variacao_pct >= 0 ? '+' : '';
-    
-    tr.innerHTML = `
-        <td class="px-4 py-3 text-sm font-semibold text-gray-800">${ano}</td>
-        <td class="px-4 py-3 text-sm text-gray-600 text-right">${dados.ontem.toLocaleString('pt-PT')}</td>
-        <td class="px-4 py-3 text-sm text-gray-800 text-right font-semibold">${dados.hoje.toLocaleString('pt-PT')}</td>
-        <td class="px-4 py-3 text-sm ${varClass} text-right font-bold">${sinal}${dados.diferenca.toLocaleString('pt-PT')}</td>
-        <td class="px-4 py-3 text-sm ${pctClass} text-right font-bold">${pctSinal}${dados.variacao_pct.toFixed(2)}%</td>
-    `;
-    anosTbody.appendChild(tr);
-});
 
 const prestadoresTbody = document.getElementById('prestadores-tbody');
 Object.entries(RELATORIO.prestadores).forEach(([prest, dados]) => {

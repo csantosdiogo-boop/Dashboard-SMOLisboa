@@ -9,26 +9,13 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 </head>
 <body class="bg-gray-50">
-    <div id="root">
-        <div class="flex items-center justify-center h-screen">
-            <div class="text-center">
-                <div class="text-6xl mb-4">⏳</div>
-                <div class="text-2xl font-bold text-yellow-400">A carregar ordens críticas...</div>
-            </div>
-        </div>
-    </div>
+    <div id="root"></div>
     
     <script>
 (function() {
     'use strict';
     
-    // Verificação de segurança
-    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
-        document.getElementById('root').innerHTML = '<div class="p-10 text-red-500 text-center font-bold">Erro: O React não carregou corretamente.</div>';
-        return;
-    }
-
-    // Teus dados (mantive a estrutura do teu ficheiro original)
+    // DADOS ATUAIS (Podes substituir esta lista pelos dados do Excel)
     const DADOS = {
         "ordens": [
             {"ordem":"110015427992","ano":2025,"prestador":"Visabeira Loures","concelho":"LOURES","status":"AIMP","tipo":"MEQ1","centro":"LRS","categoria":"vermelho"},
@@ -37,77 +24,64 @@
         ]
     };
 
-    const OrdensCriticas = () => {
-        const listaOrdens = (DADOS && Array.isArray(DADOS.ordens)) ? DADOS.ordens : [];
-
-        return React.createElement('div', { className: 'min-h-screen pb-12' },
-            // Menu Superior
-            React.createElement('nav', { className: 'bg-gray-800 shadow-md mb-8' },
-                React.createElement('div', { className: 'max-w-7xl mx-auto px-6 py-4 flex items-center justify-between' },
-                    React.createElement('h1', { className: 'text-xl font-bold text-white' }, 'UO LISBOA | Gestão de Ordens'),
-                    React.createElement('a', { 
-                        href: './index.html', 
-                        className: 'px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition shadow-sm' 
-                    }, '🏠 Dashboard')
+    function OrdensCriticas() {
+        return React.createElement('div', null,
+            // BARRA DE NAVEGAÇÃO PADRONIZADA
+            React.createElement('div', { className: 'bg-gray-800 shadow-md mb-6 sticky top-0 z-50' },
+                React.createElement('div', { className: 'max-w-7xl mx-auto px-6 py-3 flex items-center justify-between' },
+                    React.createElement('div', { className: 'flex gap-4' },
+                        React.createElement('a', { href: './index.html', className: 'px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold transition' }, '🏠 Dashboard'),
+                        React.createElement('a', { href: './criticas.html', className: 'px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold transition' }, '🚨 Ordens Críticas'),
+                        React.createElement('a', { href: './relatorio.html', className: 'px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold transition' }, '📊 Relatório Diário'),
+                        React.createElement('a', { href: './contactos.html', className: 'px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold transition' }, '📞 Contactos'),
+                        React.createElement('a', { href: './interrupcoes.html', className: 'px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold transition' }, '🔌 Interrupções')
+                    )
                 )
             ),
 
-            // Conteúdo Principal
-            React.createElement('div', { className: 'max-w-7xl mx-auto px-6' },
-                React.createElement('div', { className: 'mb-6' },
-                    React.createElement('h2', { className: 'text-3xl font-bold text-gray-800' }, '🚨 Ordens Críticas'),
-                    React.createElement('p', { className: 'text-gray-600' }, 'Lista de intervenções com prioridade elevada ou atraso.')
+            // CONTEÚDO (ESTILO ANTIGO)
+            React.createElement('div', { className: 'max-w-7xl mx-auto px-6 py-8' },
+                React.createElement('div', { className: 'flex justify-between items-center mb-6' },
+                    React.createElement('h2', { className: 'text-2xl font-bold text-gray-800' }, '🚨 Ordens Críticas')
                 ),
-
-                // Tabela
-                React.createElement('div', { className: 'bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200' },
-                    React.createElement('div', { className: 'overflow-x-auto' },
-                        React.createElement('table', { className: 'w-full text-left border-collapse' },
-                            React.createElement('thead', { className: 'bg-gray-800 text-yellow-400' },
-                                React.createElement('tr', null,
-                                    React.createElement('th', { className: 'px-6 py-4 font-bold uppercase text-sm' }, 'Nº Ordem'),
-                                    React.createElement('th', { className: 'px-6 py-4 font-bold uppercase text-sm' }, 'Estado'),
-                                    React.createElement('th', { className: 'px-6 py-4 font-bold uppercase text-sm' }, 'Tipo/Gravidade'),
-                                    React.createElement('th', { className: 'px-6 py-4 font-bold uppercase text-sm' }, 'Centro'),
-                                    React.createElement('th', { className: 'px-6 py-4 font-bold uppercase text-sm' }, 'Concelho'),
-                                    React.createElement('th', { className: 'px-6 py-4 font-bold uppercase text-sm' }, 'Prestador')
-                                )
-                            ),
-                            React.createElement('tbody', null,
-                                listaOrdens.length > 0 ? listaOrdens.map((ordem, index) => {
-                                    // Lógica de Cores baseada na categoria
-                                    const cat = (ordem.categoria || '').toLowerCase();
-                                    const bgColor = cat === 'vermelho' ? 'bg-red-50' : cat === 'amarelo' ? 'bg-yellow-50' : 'bg-white';
-                                    const borderColor = cat === 'vermelho' ? 'border-red-200' : cat === 'amarelo' ? 'border-yellow-200' : 'border-gray-100';
-                                    const emoji = cat === 'vermelho' ? '🔴' : cat === 'amarelo' ? '🟡' : '🟢';
-
-                                    return React.createElement('tr', { 
-                                        key: index, 
-                                        className: `border-b ${borderColor} ${bgColor} hover:brightness-95 transition-all` 
-                                    },
-                                        React.createElement('td', { className: 'px-6 py-4 font-mono font-bold text-gray-700' }, ordem.ordem || 'N/A'),
-                                        React.createElement('td', { className: 'px-6 py-4' }, 
-                                            React.createElement('span', { className: 'px-2 py-1 bg-gray-200 text-gray-800 rounded text-xs font-bold border border-gray-300' }, ordem.status || '---')
-                                        ),
-                                        React.createElement('td', { className: 'px-6 py-4 font-bold' }, `${emoji} ${ordem.tipo || 'Normal'}`),
-                                        React.createElement('td', { className: 'px-6 py-4 text-gray-600' }, ordem.centro || '-'),
-                                        React.createElement('td', { className: 'px-6 py-4' }, ordem.concelho || '-'),
-                                        React.createElement('td', { className: 'px-6 py-4 font-medium text-gray-800' }, ordem.prestador || 'Não atribuído')
-                                    );
-                                }) : React.createElement('tr', null, 
-                                    React.createElement('td', { colSpan: 6, className: 'px-6 py-10 text-center text-gray-500 italic' }, 'Nenhuma ordem crítica registada.')
-                                )
+                
+                React.createElement('div', { className: 'bg-white rounded-lg shadow-md overflow-hidden' },
+                    React.createElement('table', { className: 'w-full text-left border-collapse' },
+                        React.createElement('thead', { className: 'bg-gray-800 text-yellow-400' },
+                            React.createElement('tr', null,
+                                React.createElement('th', { className: 'px-4 py-3' }, 'Ordem'),
+                                React.createElement('th', { className: 'px-4 py-3' }, 'Status'),
+                                React.createElement('th', { className: 'px-4 py-3' }, 'Tipo'),
+                                React.createElement('th', { className: 'px-4 py-3' }, 'Centro'),
+                                React.createElement('th', { className: 'px-4 py-3' }, 'Concelho'),
+                                React.createElement('th', { className: 'px-4 py-3' }, 'Prestador')
                             )
+                        ),
+                        React.createElement('tbody', null,
+                            DADOS.ordens.map((ordem, index) => {
+                                const bgColor = ordem.categoria === 'vermelho' ? 'bg-red-100' : ordem.categoria === 'amarelo' ? 'bg-yellow-50' : 'bg-white';
+                                const emoji = ordem.categoria === 'vermelho' ? '🔴' : ordem.categoria === 'amarelo' ? '🟡' : '🟢';
+                                
+                                return React.createElement('tr', { key: index, className: `border-b hover:opacity-80 ${bgColor}` },
+                                    React.createElement('td', { className: 'px-4 py-3 font-medium' }, ordem.ordem),
+                                    React.createElement('td', { className: 'px-4 py-3' },
+                                        React.createElement('span', { className: 'inline-block px-2 py-1 bg-yellow-100 text-black rounded text-xs font-medium border border-yellow-400' }, ordem.status)
+                                    ),
+                                    React.createElement('td', { className: 'px-4 py-3 font-bold text-gray-700' }, `${emoji} ${ordem.tipo}`),
+                                    React.createElement('td', { className: 'px-4 py-3' }, ordem.centro),
+                                    React.createElement('td', { className: 'px-4 py-3' }, ordem.concelho),
+                                    React.createElement('td', { className: 'px-4 py-3 font-medium' }, ordem.prestador)
+                                );
+                            })
                         )
                     )
                 )
             )
         );
-    };
+    }
 
-    // Renderização para React 18
-    const container = document.getElementById('root');
-    const root = ReactDOM.createRoot(container);
+    // Renderização correta para React 18
+    const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(React.createElement(OrdensCriticas));
     
 })();

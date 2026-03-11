@@ -4,624 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interrupções e Ligações - UO Lisboa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-        }
-
-        /* Header - IGUAL AO DASHBOARD */
-        .header {
-            background: #2c3e50;
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 1rem;
-            max-width: 1400px;
-            margin: 0 auto;
-            flex-wrap: wrap;
-        }
-
-        .nav-btn {
-            padding: 0.75rem 1.5rem;
-            background: #2c3e50;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
-
-        .nav-btn:hover {
-            background: #34495e;
-        }
-
-        .nav-btn.active {
-            background: #f1c40f;
-            color: #2c3e50;
-        }
-
-        /* Container */
-        .container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-
-        /* Title Banner */
-        .title-banner {
-            background: #000;
-            color: #f1c40f;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            border: 4px solid #f1c40f;
-        }
-
-        .title-banner h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .title-banner p {
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-left: 4px solid;
-        }
-
-        .stat-card.green { border-left-color: #52c41a; }
-        .stat-card.yellow { border-left-color: #faad14; }
-        .stat-card.red { border-left-color: #f5222d; }
-        .stat-card.total { border-left-color: #1890ff; }
-
-        .stat-card h3 {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-card .number {
-            font-size: 2.5rem;
-            font-weight: 700;
-        }
-
-        .stat-card.green .number { color: #52c41a; }
-        .stat-card.yellow .number { color: #faad14; }
-        .stat-card.red .number { color: #f5222d; }
-        .stat-card.total .number { color: #1890ff; }
-
-        /* Form Section */
-        .form-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .form-section h2 {
-            color: #2c3e50;
-            margin-bottom: 1.5rem;
-            font-size: 1.3rem;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .form-group label {
-            color: #2c3e50;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .form-group input,
-        .form-group select {
-            padding: 0.75rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #f1c40f;
-        }
-
-        .btn-submit {
-            padding: 1rem 2rem;
-            background: #f1c40f;
-            color: #2c3e50;
-            border: none;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-submit:hover {
-            background: #f39c12;
-            transform: translateY(-2px);
-        }
-
-        /* Table Section */
-        .table-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .table-header h2 {
-            color: #2c3e50;
-            font-size: 1.3rem;
-        }
-
-        .filters {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 0.5rem 1rem;
-            background: white;
-            color: #2c3e50;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
-
-        .filter-btn:hover {
-            border-color: #f1c40f;
-        }
-
-        .filter-btn.active {
-            background: #f1c40f;
-            color: #2c3e50;
-            border-color: #f1c40f;
-        }
-
-        /* Table */
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background: #f5f5f5;
-        }
-
-        th {
-            padding: 1rem;
-            text-align: left;
-            color: #2c3e50;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid #f0f0f0;
-            color: #333;
-        }
-
-        tbody tr {
-            transition: all 0.2s;
-        }
-
-        tbody tr:hover {
-            background: #fafafa;
-        }
-
-        /* Status Colors - CORES DO DASHBOARD */
-        .status-green {
-            background: #f6ffed !important;
-            border-left: 4px solid #52c41a;
-        }
-
-        .status-yellow {
-            background: #fffbe6 !important;
-            border-left: 4px solid #faad14;
-        }
-
-        .status-red {
-            background: #fff1f0 !important;
-            border-left: 4px solid #f5222d;
-        }
-
-        .dias-badge {
-            display: inline-block;
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-
-        .dias-badge.green {
-            background: #52c41a;
-            color: white;
-        }
-
-        .dias-badge.yellow {
-            background: #faad14;
-            color: white;
-        }
-
-        .dias-badge.red {
-            background: #f5222d;
-            color: white;
-        }
-
-        .btn-concluir {
-            padding: 0.5rem 1rem;
-            background: #52c41a;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-        }
-
-        .btn-concluir:hover {
-            background: #389e0d;
-            transform: scale(1.05);
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #999;
-        }
-
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            table {
-                font-size: 0.85rem;
-            }
-
-            th, td {
-                padding: 0.75rem 0.5rem;
-            }
-        }
+        .filter-btn.active { background-color: #facc15; color: black; border-color: #facc15; }
     </style>
 </head>
-<body>
-
-    <!-- Header -->
-    <div class="header">
-        <div class="nav-buttons">
-            <a href="./" class="nav-btn">🏠 Dashboard</a>
-            <a href="./criticas.html" class="nav-btn">🚨 Ordens Críticas</a>
-            <a href="./relatorio.html" class="nav-btn">📊 Relatório Diário</a>
-            <a href="./contactos.html" class="nav-btn">📞 Contactos</a>
-            <a href="./interrupcoes.html" class="nav-btn active">⚡ Interrupções e Ligações</a>
+<body class="bg-gray-50">
+    
+    <div class="bg-gray-800 shadow-md mb-6 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+            <div class="flex gap-4">
+                <a href="./index.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold transition">🏠 Dashboard</a>
+                <a href="./criticas.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold transition">🚨 Ordens Críticas</a>
+                <a href="./relatorio.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold transition">📊 Relatório Diário</a>
+                <a href="./contactos.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold transition">📞 Contactos</a>
+                <a href="./interrupcoes.html" class="px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold transition">🔌 Interrupções</a>
+            </div>
+            
+            <button onclick="resetDados()" class="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition text-sm">
+                <span>🔄</span> Atualizar Dados
+            </button>
         </div>
     </div>
 
-    <!-- Container -->
-    <div class="container">
-
-        <!-- Title Banner -->
-        <div class="title-banner">
-            <h1>⚡ Interrupções e Ligações - Controlo</h1>
-            <p>Sistema de acompanhamento de ordens enviadas ao PSE</p>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card green">
-                <h3>🟢 Até 5 Dias</h3>
-                <div class="number" id="stat-green">0</div>
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="mb-8 flex justify-between items-end">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">🔌 Interrupções e Ligações</h1>
+                <p class="text-gray-600">Registo e controlo de ordens de interrupção em curso.</p>
             </div>
-            <div class="stat-card yellow">
-                <h3>🟡 6-8 Dias</h3>
-                <div class="number" id="stat-yellow">0</div>
-            </div>
-            <div class="stat-card red">
-                <h3>🔴 Mais de 8 Dias</h3>
-                <div class="number" id="stat-red">0</div>
-            </div>
-            <div class="stat-card total">
-                <h3>📋 Total Ativas</h3>
-                <div class="number" id="stat-total">0</div>
-            </div>
-        </div>
-
-        <!-- Form Section -->
-        <div class="form-section">
-            <h2>📝 Registar Nova Ordem</h2>
-            <form id="form-ordem">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Nº Ordem *</label>
-                        <input type="text" id="input-ordem" required placeholder="Ex: 110012345678">
-                    </div>
-                    <div class="form-group">
-                        <label>Centro de Trabalho *</label>
-                        <input type="text" id="input-centro" required placeholder="Ex: 8115LSB1">
-                    </div>
-                    <div class="form-group">
-                        <label>Concelho *</label>
-                        <input type="text" id="input-concelho" required placeholder="Ex: Lisboa">
-                    </div>
-                    <div class="form-group">
-                        <label>Tipo *</label>
-                        <select id="input-tipo" required>
-                            <option value="">Selecione...</option>
-                            <option value="Interrupção">Interrupção</option>
-                            <option value="Ligação no Ramal">Ligação no Ramal</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Rede *</label>
-                        <select id="input-rede" required>
-                            <option value="">Selecione...</option>
-                            <option value="Aéreo">Aéreo</option>
-                            <option value="Subterrâneo">Subterrâneo</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Registado por *</label>
-                        <input type="text" id="input-nome" required placeholder="Seu nome">
-                    </div>
+            
+            <div class="flex gap-4 text-center">
+                <div class="bg-white p-3 rounded-lg shadow-sm border-b-4 border-yellow-400">
+                    <p class="text-xs text-gray-500 uppercase font-bold">Total Ativas</p>
+                    <p id="stat-total" class="text-2xl font-black">0</p>
                 </div>
-                <button type="submit" class="btn-submit">✅ Registar Ordem</button>
-            </form>
+                <div class="bg-white p-3 rounded-lg shadow-sm border-b-4 border-red-500">
+                    <p class="text-xs text-gray-500 uppercase font-bold">Críticas</p>
+                    <p id="stat-red" class="text-2xl font-black text-red-600">0</p>
+                </div>
+            </div>
         </div>
 
-        <!-- Table Section -->
-        <div class="table-section">
-            <div class="table-header">
-                <h2>📋 Ordens Ativas</h2>
-                <div class="filters">
-                    <button class="filter-btn active" onclick="filtrar('todas')">Todas</button>
-                    <button class="filter-btn" onclick="filtrar('verde')">🟢 Verde</button>
-                    <button class="filter-btn" onclick="filtrar('amarelo')">🟡 Amarelo</button>
-                    <button class="filter-btn" onclick="filtrar('vermelho')">🔴 Vermelho</button>
-                    <button class="filter-btn" onclick="filtrar('arquivadas')">📦 Arquivadas</button>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">📝 Nova Ordem</h3>
+                    <form id="form-ordem" class="space-y-4">
+                        <input type="text" id="input-ordem" placeholder="Nº Ordem (Ex: 1100...)" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-yellow-400 outline-none" required>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" id="input-centro" placeholder="Centro (Ex: LRS)" class="p-3 border rounded-lg outline-none uppercase">
+                            <input type="text" id="input-concelho" placeholder="Concelho" class="p-3 border rounded-lg outline-none">
+                        </div>
+                        <select id="input-tipo" class="w-full p-3 border rounded-lg outline-none">
+                            <option value="Normal">Tipo: Normal</option>
+                            <option value="Urgente">Tipo: Urgente</option>
+                            <option value="Crítica">Tipo: Crítica 🔴</option>
+                        </select>
+                        <input type="text" id="input-nome" placeholder="Responsável / Operador" class="w-full p-3 border rounded-lg outline-none">
+                        <button type="submit" class="w-full py-3 bg-gray-800 text-yellow-400 font-bold rounded-lg hover:bg-gray-700 transition uppercase tracking-wider">Registar Ordem</button>
+                    </form>
                 </div>
             </div>
 
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Ordem</th>
-                            <th>Centro</th>
-                            <th>Concelho</th>
-                            <th>Tipo</th>
-                            <th>Rede</th>
-                            <th>Data Pedido</th>
-                            <th>Dias</th>
-                            <th>Registado por</th>
-                            <th>Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-ordens">
-                        <tr>
-                            <td colspan="9" class="empty-state">
-                                Nenhuma ordem registada
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="lg:col-span-2">
+                <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+                    <button onclick="filtrar('todas')" class="filter-btn active px-4 py-2 border rounded-full text-sm font-bold transition">Todas</button>
+                    <button onclick="filtrar('ativas')" class="filter-btn px-4 py-2 border rounded-full text-sm font-bold transition">Em Curso</button>
+                    <button onclick="filtrar('concluidas')" class="filter-btn px-4 py-2 border rounded-full text-sm font-bold transition">Concluídas</button>
+                </div>
+
+                <div id="lista-ordens" class="space-y-3">
+                    </div>
             </div>
         </div>
-
     </div>
 
     <script>
-let ordens = [];
-let filtroAtual = 'todas';
+        let ordens = JSON.parse(localStorage.getItem('ordens_interrupcoes')) || [];
+        let filtroAtual = 'todas';
 
-async function loadOrdens() {
-    try {
-        const result = await window.storage.get('interrupcoes-ordens', true);
-        if (result && result.value) {
-            ordens = JSON.parse(result.value);
+        function saveOrdens() {
+            localStorage.setItem('ordens_interrupcoes', JSON.stringify(ordens));
         }
-    } catch (e) {
-        console.log('Sem ordens anteriores');
-    }
-    renderOrdens();
-    updateStats();
-}
 
-async function saveOrdens() {
-    try {
-        await window.storage.set('interrupcoes-ordens', JSON.stringify(ordens), true);
-    } catch (e) {
-        console.error('Erro ao guardar:', e);
-    }
-}
-
-function calcularDias(dataPedido) {
-    const hoje = new Date();
-    const pedido = new Date(dataPedido);
-    const diff = Math.floor((hoje - pedido) / (1000 * 60 * 60 * 24));
-    return diff;
-}
-
-function getStatusColor(dias) {
-    if (dias <= 5) return 'green';
-    if (dias <= 8) return 'yellow';
-    return 'red';
-}
-
-function renderOrdens() {
-    const tbody = document.getElementById('tbody-ordens');
-    
-    let ordensVisiveis = ordens.filter(o => {
-        if (filtroAtual === 'todas') return !o.concluida;
-        if (filtroAtual === 'arquivadas') return o.concluida;
-        if (!o.concluida) {
-            const dias = calcularDias(o.dataPedido);
-            const cor = getStatusColor(dias);
-            return cor === filtroAtual.replace('verde', 'green').replace('amarelo', 'yellow').replace('vermelho', 'red');
+        function resetDados() {
+            if(confirm('Atenção: Isto irá apagar todas as interrupções registadas nesta página. Continuar?')) {
+                localStorage.removeItem('ordens_interrupcoes');
+                location.reload();
+            }
         }
-        return false;
-    });
 
-    if (ordensVisiveis.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Nenhuma ordem ${filtroAtual === 'arquivadas' ? 'arquivada' : 'ativa'}</td></tr>`;
-        return;
-    }
+        document.getElementById('form-ordem').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const novaOrdem = {
+                id: Date.now(),
+                num: document.getElementById('input-ordem').value,
+                centro: document.getElementById('input-centro').value.toUpperCase(),
+                concelho: document.getElementById('input-concelho').value,
+                tipo: document.getElementById('input-tipo').value,
+                nome: document.getElementById('input-nome').value,
+                data: new Date().toLocaleString('pt-PT'),
+                concluida: false
+            };
+            ordens.unshift(novaOrdem);
+            saveOrdens();
+            render();
+            e.target.reset();
+        });
 
-    tbody.innerHTML = ordensVisiveis.map(ordem => {
-        const dias = calcularDias(ordem.dataPedido);
-        const cor = getStatusColor(dias);
-        const dataBR = new Date(ordem.dataPedido).toLocaleDateString('pt-PT');
+        function concluirOrdem(id) {
+            ordens = ordens.map(o => o.id === id ? {...o, concluida: true, dataFim: new Date().toLocaleString('pt-PT')} : o);
+            saveOrdens();
+            render();
+        }
 
-        return `
-            <tr class="status-${cor}">
-                <td><strong>${ordem.numOrdem}</strong></td>
-                <td>${ordem.centro}</td>
-                <td>${ordem.concelho}</td>
-                <td>${ordem.tipo}</td>
-                <td>${ordem.rede}</td>
-                <td>${dataBR}</td>
-                <td><span class="dias-badge ${cor}">${dias} dias</span></td>
-                <td>${ordem.nome}</td>
-                <td>
-                    ${!ordem.concluida ? `<button class="btn-concluir" onclick="concluirOrdem('${ordem.id}')">✅ Concluir</button>` : '<span style="color: #52c41a;">✓ Concluída</span>'}
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
+        function filtrar(tipo) {
+            filtroAtual = tipo;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.toLowerCase().includes(tipo.replace('as','')) || (tipo==='todas' && btn.innerText==='Todas'));
+            });
+            render();
+        }
 
-function updateStats() {
-    const ativas = ordens.filter(o => !o.concluida);
-    let verde = 0, amarelo = 0, vermelho = 0;
+        function render() {
+            const lista = document.getElementById('lista-ordens');
+            const filtradas = ordens.filter(o => {
+                if (filtroAtual === 'ativas') return !o.concluida;
+                if (filtroAtual === 'concluidas') return o.concluida;
+                return true;
+            });
 
-    ativas.forEach(o => {
-        const dias = calcularDias(o.dataPedido);
-        const cor = getStatusColor(dias);
-        if (cor === 'green') verde++;
-        else if (cor === 'yellow') amarelo++;
-        else vermelho++;
-    });
+            document.getElementById('stat-total').innerText = ordens.filter(o => !o.concluida).length;
+            document.getElementById('stat-red').innerText = ordens.filter(o => !o.concluida && o.tipo === 'Crítica').length;
 
-    document.getElementById('stat-green').textContent = verde;
-    document.getElementById('stat-yellow').textContent = amarelo;
-    document.getElementById('stat-red').textContent = vermelho;
-    document.getElementById('stat-total').textContent = ativas.length;
-}
+            lista.innerHTML = filtradas.map(o => `
+                <div class="bg-white p-4 rounded-lg shadow border-l-4 ${o.concluida ? 'border-gray-400 opacity-60' : (o.tipo === 'Crítica' ? 'border-red-500' : 'border-yellow-400')} flex justify-between items-center">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-lg">${o.num}</span>
+                            <span class="text-xs px-2 py-0.5 bg-gray-100 rounded border">${o.tipo}</span>
+                        </div>
+                        <p class="text-sm text-gray-600">${o.centro} - ${o.concelho} | <span class="text-xs">Resp: ${o.nome}</span></p>
+                        <p class="text-[10px] text-gray-400 uppercase mt-1">Início: ${o.data} ${o.concluida ? ` | Fim: ${o.dataFim}` : ''}</p>
+                    </div>
+                    ${!o.concluida ? `
+                        <button onclick="concluirOrdem(${o.id})" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-lg transition">CONCLUIR</button>
+                    ` : '<span class="text-green-600 font-bold text-xs font-mono">✅ FINALIZADA</span>'}
+                </div>
+            `).join('');
+        }
 
-document.getElementById('form-ordem').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const novaOrdem = {
-        id: Date.now().toString(),
-        numOrdem: document.getElementById('input-ordem').value,
-        centro: document.getElementById('input-centro').value,
-        concelho: document.getElementById('input-concelho').value,
-        tipo: document.getElementById('input-tipo').value,
-        rede: document.getElementById('input-rede').value,
-        nome: document.getElementById('input-nome').value,
-        dataPedido: new Date().toISOString().split('T')[0],
-        concluida: false
-    };
-
-    ordens.push(novaOrdem);
-    await saveOrdens();
-    renderOrdens();
-    updateStats();
-
-    e.target.reset();
-    alert('✅ Ordem registada com sucesso!');
-});
-
-async function concluirOrdem(id) {
-    if (!confirm('Marcar esta ordem como concluída?')) return;
-
-    const ordem = ordens.find(o => o.id === id);
-    if (ordem) {
-        ordem.concluida = true;
-        ordem.dataConclusao = new Date().toISOString().split('T')[0];
-        await saveOrdens();
-        renderOrdens();
-        updateStats();
-    }
-}
-
-function filtrar(tipo) {
-    filtroAtual = tipo;
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    renderOrdens();
-}
-
-loadOrdens();
+        render();
     </script>
-
 </body>
 </html>

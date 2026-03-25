@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordens Críticas – Análise de tempo no mesmo estado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navbar, cloned from index dashboard -->
+    <div class="bg-gray-800 shadow-md mb-6 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+            <div class="flex gap-4">
+                <a href="./index dashboard.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold transition">🏠 Dashboard</a>
+                <a href="./criticas_v7.html" class="px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold">🚨 Ordens Críticas</a>
+                <a href="./relatorio.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold transition">📊 Relatório Diário</a>
+                <a href="./contactos.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold transition">☎️ Contactos</a>
+                <a href="./interrupcoes.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold transition">⚡ Interrupções</a>
+            </div>
+            <button onclick="window.location.reload()" class="px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition flex items-center gap-2">
+                <span>🔄</span>
+                <span class="hidden md:inline">Refresh</span>
+            </button>
+        </div>
+    </div>
+    <div class="container mx-auto p-6 space-y-6">
+        <!-- Hero Card -->
+        <div class="bg-black text-yellow-400 border-4 border-yellow-400 rounded-lg shadow-lg p-6">
+            <h1 class="text-3xl font-bold flex items-center space-x-2"><span>🛑</span><span>Ordens Críticas – Análise de tempo no mesmo estado</span></h1>
+            <p class="text-sm text-yellow-300">Ordens organizadas por tempo no mesmo estado</p>
+        </div>
+        <!-- Prestadores Cards -->
+        <div id="prestadoresContainer" class="grid grid-cols-3 gap-6"></div>
+        <!-- Filter Pills -->
+        <div class="bg-white border border-gray-200 shadow-md rounded-lg p-4">
+            <h2 class="text-xl font-semibold mb-2">Filtrar por Categoria</h2>
+            <div class="flex space-x-4">
+                <div id="pill-green" class="flex items-center space-x-1 bg-green-100 text-green-800 px-3 py-1 rounded-full cursor-pointer">
+                    <span>🟢</span><span>0-7 dias</span>
+                </div>
+                <div id="pill-yellow" class="flex items-center space-x-1 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full cursor-pointer">
+                    <span>🟡</span><span>7-15 dias</span>
+                </div>
+                <div id="pill-red" class="flex items-center space-x-1 bg-red-100 text-red-800 px-3 py-1 rounded-full cursor-pointer">
+                    <span>🔴</span><span>+15 dias (Críticas)</span>
+                </div>
+            </div>
+        </div>
+        <!-- Table Section -->
+        <div class="bg-white border border-gray-200 shadow-md rounded-lg p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 id="tableTitle" class="text-2xl font-semibold flex items-center space-x-2"><span>📄</span><span>Ordens Críticas (0)</span></h2>
+                <button id="exportBtn" class="bg-yellow-400 text-black font-bold px-4 py-2 rounded shadow flex items-center space-x-1"><span>🗂️</span><span>Exportar Excel</span></button>
+            </div>
+            <div class="overflow-x-auto">
+                <table id="ordersTable" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-900 text-white">
+                        <tr>
+                            <th class="px-4 py-2">Nº Ordem</th>
+                            <th class="px-4 py-2">Status</th>
+                            <th class="px-4 py-2">Dias</th>
+                            <th class="px-4 py-2">Tipo de Ordem</th>
+                            <th class="px-4 py-2">Concelho</th>
+                            <th class="px-4 py-2">Prestador</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-100"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Parse JSON from localStorage
+        function parseDateStr(d) {
+            if (!d) return null;
+            const parts = d.split('/');
+            if (parts.length !== 3) return null;
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const year = parseInt(parts[2], 10);
+            return new Date(year, month, day);
+        }
+        function getAgeFromDate(d) {
+            const date = parseDateStr(d);
+            if (!date) return 0;
+            const diff = new Date() - date;
+            return Math.floor(diff / (1000 * 60 * 60 * 24));
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            let records = [];
+            try {
+                const str = localStorage.getItem('otsData');
+                if (str) {
+                    records = JSON.parse(str);
+                }
+            } catch(err) {
+                console.error('Error parsing otsData', err);
+            }
+            records = records.map(rec => {
+                const d = rec.data || rec.date || rec.data_snapshot || '';
+                const age = getAgeFromDate(d);
+                return {...rec, age: age};
+            });
+            // Group by prestador
+            const prestadorOrder = ['CME Lisboa', 'CME Setúbal', 'Visabeira Loures'];
+            const map = {};
+            records.forEach(r => {
+                const p = r.empreiteiro || r.prestador || r.prestador_nome || '';
+                if (!map[p]) {
+                    map[p] = {green: 0, yellow: 0, red: 0, total: 0};
+                }
+                let cat = '';
+                if (r.age <= 7) {
+                    map[p].green += 1;
+                    cat = 'green';
+                } else if (r.age <= 15) {
+                    map[p].yellow += 1;
+                    cat = 'yellow';
+                } else {
+                    map[p].red += 1;
+                    cat = 'red';
+                }
+                map[p].total += 1;
+                // Save category for table filtering
+                r.category = cat;
+            });
+            // Sort prestadores according to order
+            const keys = Object.keys(map);
+            const sortedKeys = [];
+            prestadorOrder.forEach(k => {
+                const idx = keys.indexOf(k);
+                if (idx !== -1) {
+                    sortedKeys.push(k);
+                    keys.splice(idx, 1);
+                }
+            });
+            keys.sort();
+            sortedKeys.push(...keys);
+            // Render prestador cards
+            const container = document.getElementById('prestadoresContainer');
+            sortedKeys.forEach(p => {
+                const entry = map[p];
+                const card = document.createElement('div');
+                card.className = 'bg-white border border-gray-200 shadow-md rounded-lg p-4';
+                card.innerHTML = `<h3 class="text-lg font-semibold mb-2">${p}</h3>
+                    <div class="space-y-1">
+                        <div class="flex justify-between items-center bg-green-100 border-l-4 border-green-400 p-2 rounded"><span>0-7 dias</span><span>${entry.green || 0}</span></div>
+                        <div class="flex justify-between items-center bg-yellow-100 border-l-4 border-yellow-400 p-2 rounded"><span>7-15 dias</span><span>${entry.yellow || 0}</span></div>
+                        <div class="flex justify-between items-center bg-red-100 border-l-4 border-red-400 p-2 rounded"><span>+15 dias</span><span>${entry.red || 0}</span></div>
+                        <div class="flex justify-between items-center font-semibold border-t border-gray-200 pt-2 mt-2"><span>Total</span><span>${entry.total || 0}</span></div>
+                    </div>`;
+                container.appendChild(card);
+            });
+            // Render table
+            const tbody = document.querySelector('#ordersTable tbody');
+            const renderTable = (filterCats) => {
+                tbody.innerHTML = '';
+                let count = 0;
+                records.forEach(r => {
+                    if (filterCats && filterCats.indexOf(r.category) === -1) return;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td class="px-4 py-2">${r.ordem || ''}</td>
+                                   <td class="px-4 py-2">${r.status || ''}</td>
+                                   <td class="px-4 py-2">${r.age || ''}</td>
+                                   <td class="px-4 py-2">${r.tipo || r.type || ''}</td>
+                                   <td class="px-4 py-2">${r.concelho || r.zona || ''}</td>
+                                   <td class="px-4 py-2">${r.empreiteiro || r.prestador || ''}</td>`;
+                    tbody.appendChild(tr);
+                    count += 1;
+                });
+                document.getElementById('tableTitle').children[1].innerText = `Ordens Críticas (${count.toLocaleString('pt-PT')})`;
+            };
+            // Start with all
+            renderTable(null);
+            // Pill filtering
+            const pills = {
+                'green': document.getElementById('pill-green'),
+                'yellow': document.getElementById('pill-yellow'),
+                'red': document.getElementById('pill-red')
+            };
+            const activeFilters = {green: true, yellow: true, red: true};
+            Object.keys(pills).forEach(color => {
+                pills[color].addEventListener('click', function() {
+                    activeFilters[color] = !activeFilters[color];
+                    pills[color].classList.toggle('opacity-50', !activeFilters[color]);
+                    const cats = Object.keys(activeFilters).filter(c => activeFilters[c]);
+                    renderTable(cats.length === 3 ? null : cats);
+                });
+            });
+            // Export
+            document.getElementById('exportBtn').addEventListener('click', function() {
+                const rows = document.querySelectorAll('#ordersTable tr');
+                let csv = [];
+                // header
+                csv.push(['Nº Ordem','Status','Dias','Tipo de Ordem','Concelho','Prestador'].join(','));
+                rows.forEach(row => {
+                    const cols = row.querySelectorAll('td');
+                    let line = [];
+                    cols.forEach(col => {
+                        let text = col.textContent.replace(/
+/g, '').trim();
+                        text = text.replace(/"/g, '""');
+                        line.push(`"${text}"`);
+                    });
+                    if (line.length > 0) {
+                        csv.push(line.join(','));
+                    }
+                });
+                const csvStr = csv.join('
+');
+                const blob = new Blob([csvStr], { type: 'text/csv' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'ordens_criticas.csv';
+                a.click();
+            });
+        });
+    </script>
+</body>
+</html>

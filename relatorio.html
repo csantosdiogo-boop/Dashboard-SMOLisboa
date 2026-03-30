@@ -42,97 +42,29 @@
     </div>
     
     <script>
-const loadLS = (key, fallback) => {
-  try {
-    const v = localStorage.getItem(key);
-    return v ? JSON.parse(v) : fallback;
-  } catch(e) {
-    return fallback;
+let EVOLUCAO = {"semanas":[{"semana":10,"ano":2025,"data_inicio":"03/03/2025","data_fim":"09/03/2025","data_snapshot":"05/03/2025","prestadores":{"CME Lisboa":{"inicio":9257,"real":0,"percentagem":0.0,"restantes":9257},"CME Setúbal":{"inicio":3701,"real":0,"percentagem":0.0,"restantes":3701},"Visabeira Loures":{"inicio":6619,"real":0,"percentagem":0.0,"restantes":6619}},"total":{"inicio":19577,"real":0,"percentagem":0.0,"restantes":19577}}]};
+
+/*__RELATORIO_DATE_SYNC_V2__*/
+// 1) Se existir EVOLUCAO calculada pelo Dashboard, usa-a
+try {
+  const s = localStorage.getItem('EVOLUCAO_UO_LISBOA');
+  if (s) EVOLUCAO = JSON.parse(s);
+} catch(e) { }
+
+// 2) Sincronizar a data do Relatório com a data do último upload (otsSnapshotLabel)
+try {
+  const label = localStorage.getItem('otsSnapshotLabel');
+  if (label) {
+    const els = document.querySelectorAll('p, span, div');
+    els.forEach(el => {
+      const t = (el.textContent || '').trim();
+      if (t.toLowerCase().startsWith('atualizado:')) {
+        el.textContent = 'Atualizado: ' + label;
+      }
+    });
   }
-};
+} catch(e) { }
 
-// Regras de negócio:
-// - REAL* conta como executada (inclui REAL CC CL, REAL CL, etc.)
-// - EXCEÇÃO: REAL NEFE (Não Efectuadas) NÃO conta como executada
-// - PC é Pendente Cliente (não executada)
-function isClosedReal(status) {
-  const s = String(status || '').trim().toUpperCase();
-  return s.startsWith('REAL') && !s.includes('NEFE');
-}
-function isClosedNefe(status) {
-  const s = String(status || '').trim().toUpperCase();
-  return s.startsWith('REAL') && s.includes('NEFE');
-}
-function isOpen(status) {
-  return !isClosedReal(status) && !isClosedNefe(status);
-}
-
-const baseline = loadLS('otsBaseline', []);
-const prev = loadLS('otsPrev', baseline);
-const atual = loadLS('otsData', baseline);
-
-function groupCount(list, predicate) {
-  const m = {};
-  list.forEach(o => {
-    const p = o.empreiteiro || o.prestador || 'SEM_PRESTADOR';
-    if (predicate(o)) m[p] = (m[p] || 0) + 1;
-  });
-  return m;
-}
-
-function calcRealTransitions(prevList, atualList) {
-  const prevMap = new Map(prevList.map(o => [o.ordem, o.status]));
-  const out = {};
-  atualList.forEach(o => {
-    const p = o.empreiteiro || o.prestador || 'SEM_PRESTADOR';
-    const before = prevMap.get(o.ordem);
-    const now = o.status;
-    if (!isClosedReal(before) && isClosedReal(now)) {
-      out[p] = (out[p] || 0) + 1;
-    }
-  });
-  return out;
-}
-
-function buildEvolucao() {
-  const inicioMap = groupCount(baseline, o => isOpen(o.status));
-  const restMap = groupCount(atual, o => isOpen(o.status));
-  const realMap = calcRealTransitions(prev, atual);
-
-  const prestadoresOrdem = ['CME Lisboa', 'CME Setúbal', 'Visabeira Loures'];
-  const prestadores = {};
-
-  prestadoresOrdem.forEach(p => {
-    const ini = inicioMap[p] || 0;
-    const real = realMap[p] || 0;
-    const rest = restMap[p] || 0;
-    const perc = ini > 0 ? (real / ini) * 100 : 0;
-    prestadores[p] = { inicio: ini, real: real, percentagem: perc, restantes: rest };
-  });
-
-  const totalInicio = Object.values(inicioMap).reduce((a,b)=>a+b,0);
-  const totalReal = Object.values(realMap).reduce((a,b)=>a+b,0);
-  const totalRest = Object.values(restMap).reduce((a,b)=>a+b,0);
-  const totalPerc = totalInicio > 0 ? (totalReal/totalInicio)*100 : 0;
-
-  return {
-    semanas: [{
-      semana: 0,
-      ano: new Date().getFullYear(),
-      data_inicio: '',
-      data_fim: '',
-      data_snapshot: '',
-      prestadores,
-      total: { inicio: totalInicio, real: totalReal, percentagem: totalPerc, restantes: totalRest }
-    }]
-  };
-}
-
-const EVOLUCAO = buildEvolucao();
-
-window.addEventListener('storage', (e) => {
-  if (e.key === 'otsData' || e.key === 'otsPrev' || e.key === 'otsBaseline') window.location.reload();
-});
 
 const semanasContainer = document.getElementById('semanas-container');
 

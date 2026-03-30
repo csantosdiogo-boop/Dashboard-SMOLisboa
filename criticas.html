@@ -4,14 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ordens Críticas – Análise de tempo no mesmo estado</title>
-    <script src="https://cdn.tailwindcss.com">
-
-// Auto-refresh quando houver upload feito na index
-window.addEventListener('storage', (e) => {
-  if (e.key === 'otsData' || e.key === 'otsPrev' || e.key === 'otsBaseline') window.location.reload();
-});
-
-</script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
     <!-- Navbar, cloned from index dashboard -->
@@ -77,6 +70,11 @@ window.addEventListener('storage', (e) => {
         </div>
     </div>
     <script>
+/*__CRITICAS_IDB_V1__*/
+const DB_NAME='uoLisboaDashboard'; const DB_STORE='kv';
+function openDB(){return new Promise((res,rej)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{const db=req.result; if(!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE,{keyPath:'key'});};req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error);});}
+async function idbGet(key){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readonly');const st=tx.objectStore(DB_STORE);const r=st.get(key);r.onsuccess=()=>res(r.result? r.result.value:null);r.onerror=()=>rej(r.error);});}
+
         // Parse JSON from localStorage
         function parseDateStr(d) {
             if (!d) return null;
@@ -93,12 +91,14 @@ window.addEventListener('storage', (e) => {
             const diff = new Date() - date;
             return Math.floor(diff / (1000 * 60 * 60 * 24));
         }
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             let records = [];
             try {
-                const str = localStorage.getItem('otsData');
-                if (str) {
-                    records = JSON.parse(str);
+                let records = [];
+  try {
+    const data = await idbGet('data_filtered');
+    if (data && Array.isArray(data)) records = data;
+  } catch(e) { console.error('Erro a ler IndexedDB', e); }
                 }
             } catch(err) {
                 console.error('Error parsing otsData', err);
@@ -222,13 +222,6 @@ window.addEventListener('storage', (e) => {
                 a.click();
             });
         });
-    
-
-// Auto-refresh quando houver upload feito na index
-window.addEventListener('storage', (e) => {
-  if (e.key === 'otsData' || e.key === 'otsPrev' || e.key === 'otsBaseline') window.location.reload();
-});
-
-</script>
+    </script>
 </body>
 </html>

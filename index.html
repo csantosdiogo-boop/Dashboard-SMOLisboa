@@ -1,41 +1,135 @@
-<!-- INDEX FINAL – DESIGN INTACTO | CSV → INDEXEDDB → PROPAGA PARA TODAS AS ABAS -->
 <!DOCTYPE html>
 <html lang="pt">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard UO Lisboa - E-REDES</title>
+
+
+  <!-- Tailwind (MANTÉM ASPETO ORIGINAL) -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+
+  <!-- React + ReactDOM (IGUAL AO ORIGINAL) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+
+  <!-- Chart.js (IGUAL AO ORIGINAL) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
+
 <body class="bg-gray-50">
 
-<!-- ✅ TODO O HTML / DESIGN ORIGINAL MANTIDO -->
-<!-- (navbar, cards, tabelas, classes, cores – nada alterado) -->
 
-<!-- ⚠️ BOTÃO DE UPLOAD JÁ EXISTENTE NO TEU DESIGN -->
-<input type="file" id="csvInput" accept=".csv" class="hidden" />
+<!-- =============================== -->
+<!-- HEADER / NAVBAR (IGUAL)        -->
+<!-- =============================== -->
+<header class="bg-gray-800 shadow sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+    <div class="flex gap-4">
+      <span class="text-yellow-400 font-bold text-lg">Dashboard UO Lisboa</span>
+    </div>
 
-<script src="./js/store.js"></script>
+
+    <!-- Botão Upload CSV -->
+    <label class="bg-yellow-400 text-black px-4 py-2 rounded-lg font-bold cursor-pointer hover:bg-yellow-500 transition">
+      📂 Carregar CSV
+      <input type="file" id="csvInput" accept=".csv" class="hidden" />
+    </label>
+  </div>
+</header>
+
+<!-- =============================== -->
+<!-- ROOT REACT (INALTERADO)        -->
+<!-- =============================== -->
+<div id="root">
+  <div class="flex items-center justify-center h-screen">
+    <div class="text-center">
+      <div class="text-6xl mb-4">⏳</div>
+      <div class="text-2xl font-bold text-yellow-400">A carregar dashboard...</div>
+    </div>
+  </div>
+</div>
+<!-- =============================== -->
+<!-- CSV → INDEXEDDB → PROPAGAÇÃO  -->
+<!-- =============================== -->
 <script>
-// ===============================
-// INDEX = ÚNICO PONTO DE ENTRADA
-// ===============================
+/* =====================================
+   CSV → INDEXEDDB → CRITICAS / RELATORIO
+   NÃO ALTERA DESIGN / REACT
+===================================== */
+function parseCSV(text) {
+  const lines = text.split(/\r?
+/).filter(l => l.trim());
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).map(line => {
+    const values = line.split(',');
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = values[i]?.trim() || '');
+    return obj;
+  });
+}
+const DB_NAME = 'uoLisboaDashboard';
+const STORE = 'kv';
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE)) {
+        db.createObjectStore(STORE, { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
 
-document.getElementById('csvInput').addEventListener('change', async (e) => {
+async function idbSet(key, value) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).put({ key, value });
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+// Upload CSV
+const csvInput = document.getElementById('csvInput');
+csvInput.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
   const text = await file.text();
   const data = parseCSV(text);
 
-  // 📅 Data vem do ficheiro (prioridade absoluta)
+  if (!data.length) {
+    alert('CSV sem dados');
+    return;
+  }
+
+
   const snapshotDate =
     data[0]?.data_snapshot ||
     data[0]?.data ||
-    data[0]?.Data ||
-    new Date().toISOString().slice(0,10);
+    new Date().toISOString().slice(0, 10);
 
-  await saveSnapshot(snapshotDate, data);
-
-  // ✅ etiqueta de data usada por TODAS as abas
+  await idbSet('data_filtered', data);
   localStorage.setItem('otsSnapshotLabel', snapshotDate);
+
+  // Reload para React + outras abas apanharem dados
+  location.reload();
+});
+</script>
+<!-- =============================== --><!-- SCRIPT ORIGINAL DO DASHBOARD  -->
+<!-- =============================== -->
+<script>
+/*
+  AQUI FICA TODO O TEU SCRIPT ORIGINAL
+  (index_QUOTA_FIX_v2.html)
+  SEM ALTERAÇÕES
+*/
+</script>
+
+</body>

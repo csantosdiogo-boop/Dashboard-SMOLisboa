@@ -1,135 +1,122 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard UO Lisboa - E-REDES</title>
-
-
-  <!-- Tailwind (MANTÉM ASPETO ORIGINAL) -->
+  <meta charset="UTF-8">
+  <title>Dashboard – Index</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-
-  <!-- React + ReactDOM (IGUAL AO ORIGINAL) -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-
-  <!-- Chart.js (IGUAL AO ORIGINAL) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
-
 <body class="bg-gray-50">
 
-
-<!-- =============================== -->
-<!-- HEADER / NAVBAR (IGUAL)        -->
-<!-- =============================== -->
-<header class="bg-gray-800 shadow sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
-    <div class="flex gap-4">
-      <span class="text-yellow-400 font-bold text-lg">Dashboard UO Lisboa</span>
-    </div>
-
-
-    <!-- Botão Upload CSV -->
-    <label class="bg-yellow-400 text-black px-4 py-2 rounded-lg font-bold cursor-pointer hover:bg-yellow-500 transition">
-      📂 Carregar CSV
-      <input type="file" id="csvInput" accept=".csv" class="hidden" />
-    </label>
-  </div>
+<header class="bg-gray-800 text-yellow-400 p-4 flex justify-between">
+  <h1 class="font-bold">Dashboard UO Lisboa</h1>
+  <label class="bg-yellow-400 text-black px-4 py-2 rounded cursor-pointer font-bold">
+    Carregar CSV
+    <input type="file" id="csvInput" accept=".csv" class="hidden">
+  </label>
 </header>
 
-<!-- =============================== -->
-<!-- ROOT REACT (INALTERADO)        -->
-<!-- =============================== -->
-<div id="root">
-  <div class="flex items-center justify-center h-screen">
-    <div class="text-center">
-      <div class="text-6xl mb-4">⏳</div>
-      <div class="text-2xl font-bold text-yellow-400">A carregar dashboard...</div>
+<main class="p-6 space-y-4">
+  <div id="msg" class="text-sm"></div>
+
+  <div id="metrics" class="grid grid-cols-3 gap-4 hidden">
+    <div class="bg-white p-4 shadow rounded">
+      <div class="text-gray-500 text-xs">Alterações de estado</div>
+      <div id="altCount" class="text-2xl font-bold"></div>
+    </div>
+    <div class="bg-white p-4 shadow rounded">
+      <div class="text-gray-500 text-xs">% ordens com alterações</div>
+      <div id="altPct" class="text-2xl font-bold"></div>
+    </div>
+    <div class="bg-white p-4 shadow rounded">
+      <div class="text-gray-500 text-xs">Ordens REAL</div>
+      <div id="realCount" class="text-2xl font-bold"></div>
     </div>
   </div>
-</div>
-<!-- =============================== -->
-<!-- CSV → INDEXEDDB → PROPAGAÇÃO  -->
-<!-- =============================== -->
+
+  <div class="space-x-4">
+    <a href="criticas.html" class="underline">Críticas</a>
+    <a href="relatorio.html" class="underline">Relatório</a>
+  </div>
+</main>
+
 <script>
-/* =====================================
-   CSV → INDEXEDDB → CRITICAS / RELATORIO
-   NÃO ALTERA DESIGN / REACT
-===================================== */
-function parseCSV(text) {
-  const lines = text.split(/\r?
-/).filter(l => l.trim());
-  const headers = lines[0].split(',').map(h => h.trim());
-  return lines.slice(1).map(line => {
-    const values = line.split(',');
-    const obj = {};
-    headers.forEach((h, i) => obj[h] = values[i]?.trim() || '');
-    return obj;
-  });
-}
-const DB_NAME = 'uoLisboaDashboard';
-const STORE = 'kv';
+const DB = 'uoLisboaDB';
+const STORE = 'data';
+
+const COL_OT = 'OT';
+const COL_STATUS = 'STATUS';
+const COL_PRESTADOR = 'PRESTADOR';
+
+const IGNORE_STATUS = ['REAL NEFE', 'REAL ANUL'];
+
 function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(STORE)) {
-        db.createObjectStore(STORE, { keyPath: 'key' });
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
+  return new Promise(res => {
+    const r = indexedDB.open(DB, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore(STORE, { keyPath: 'k' });
+    r.onsuccess = () => res(r.result);
+  });
 }
 
-async function idbSet(key, value) {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, 'readwrite');
-    tx.objectStore(STORE).put({ key, value });
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error);
-  });
+function parseCSV(t) {
+  const [h, ...r] = t.split(/\r?\n/).filter(l => l.trim());
+  const H = h.split(',');
+  return r.map(l => {
+    const o = {};
+    l.split(',').forEach((v,i)=>o[H[i]]=v?.trim());
+    return o;
+  });
 }
-// Upload CSV
-const csvInput = document.getElementById('csvInput');
-csvInput.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
 
-  const text = await file.text();
-  const data = parseCSV(text);
+function isValidStatus(s) {
+  if (!s) return false;
+  if (IGNORE_STATUS.includes(s)) return false;
+  return true;
+}
 
-  if (!data.length) {
-    alert('CSV sem dados');
-    return;
-  }
+function isReal(s) {
+  return s?.startsWith('REAL') && s !== 'REAL NEFE';
+}
 
+document.getElementById('csvInput').addEventListener('change', async e => {
+  const text = await e.target.files[0].text();
+  const raw = parseCSV(text);
+  const data = raw.filter(r => isValidStatus(r[COL_STATUS]));
 
-  const snapshotDate =
-    data[0]?.data_snapshot ||
-    data[0]?.data ||
-    new Date().toISOString().slice(0, 10);
+  const db = await openDB();
+  db.transaction(STORE,'readwrite').objectStore(STORE).put({k:'csv', v:data});
 
-  await idbSet('data_filtered', data);
-  localStorage.setItem('otsSnapshotLabel', snapshotDate);
+  // ---- métricas ----
+  const byOT = {};
+  data.forEach(r => {
+    const ot = r[COL_OT];
+    if (!byOT[ot]) byOT[ot] = [];
+    byOT[ot].push(r[COL_STATUS]);
+  });
 
-  // Reload para React + outras abas apanharem dados
-  location.reload();
+  let alt = 0;
+  let otsComAlt = 0;
+
+  Object.values(byOT).forEach(states => {
+    let changes = 0;
+    for (let i=1;i<states.length;i++) {
+      if (states[i] !== states[i-1]) changes++;
+    }
+    if (changes > 0) otsComAlt++;
+    alt += changes;
+  });
+
+  const totalOT = Object.keys(byOT).length;
+  const realCount = data.filter(r => isReal(r[COL_STATUS])).length;
+
+  document.getElementById('altCount').textContent = alt;
+  document.getElementById('altPct').textContent =
+    totalOT ? ((otsComAlt/totalOT)*100).toFixed(1)+'%' : '0%';
+  document.getElementById('realCount').textContent = realCount;
+
+  document.getElementById('metrics').classList.remove('hidden');
+  document.getElementById('msg').innerHTML =
+    `<span class="text-green-700 font-bold">CSV carregado com sucesso</span> (${data.length} linhas)`;
 });
 </script>
-<!-- =============================== --><!-- SCRIPT ORIGINAL DO DASHBOARD  -->
-<!-- =============================== -->
-<script>
-/*
-  AQUI FICA TODO O TEU SCRIPT ORIGINAL
-  (index_QUOTA_FIX_v2.html)
-  SEM ALTERAÇÕES
-*/
-</script>
-
 </body>
+</html>

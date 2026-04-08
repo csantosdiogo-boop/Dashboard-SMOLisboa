@@ -2,48 +2,42 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>Relatório</title>
+  <title>Relatório Diário</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 p-6">
+<body class="bg-gray-50">
 
-<h1 class="text-xl font-bold mb-4">Relatório Geral</h1>
-
-<button onclick="exportCSV()" class="mb-4 bg-gray-800 text-white px-4 py-2 rounded">
-  Exportar Excel
-</button>
-
-<table class="bg-white shadow rounded w-full text-xs">
-  <thead id="th" class="bg-gray-200"></thead>
-  <tbody id="tb"></tbody>
-</table>
+<div class="max-w-7xl mx-auto p-6">
+  <h1 class="text-3xl font-bold mb-4">📊 Relatório Diário</h1>
+  <p id="info" class="mb-4 text-gray-600"></p>
+  <div id="resumo" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+</div>
 
 <script>
-function openDB(){return new Promise(r=>{const d=indexedDB.open('uoLisboaDB',1);d.onsuccess=()=>r(d.result);});}
-let rows=[];
+const store = JSON.parse(localStorage.getItem("dashboardData") || "{}");
+const dados = store.dados || [];
 
-(async ()=>{
-  const db = await openDB();
-  const req = db.transaction('data').objectStore('data').get('csv');
-  req.onsuccess = () => {
-    rows = req.result.v;
-    const h = Object.keys(rows[0]);
-    document.getElementById('th').innerHTML =
-      `<tr>${h.map(x=>`<th class="p-1">${x}</th>`).join('')}</tr>`;
-    document.getElementById('tb').innerHTML =
-      rows.map(r=>`<tr>${h.map(x=>`<td class="p-1">${r[x]}</td>`).join('')}</tr>`).join('');
-  };
-})();
+const total = dados.length;
+const real = dados.filter(o => o.status_normalizado === "REAL").length;
+const restantes = total - real;
+const percent = total ? ((real / total) * 100).toFixed(1) : 0;
 
-function exportCSV(){
-  const h = Object.keys(rows[0]);
-  let csv = h.join(',')+'\n';
-  rows.forEach(r=>csv+=h.map(x=>r[x]).join(',')+'\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='relatorio_completo.csv';
-  a.click();
-}
+document.getElementById("info").innerText =
+  "Base carregada em: " + new Date(store.timestamp || "").toLocaleString("pt-PT");
+
+document.getElementById("resumo").innerHTML = `
+<div class="bg-white p-4 rounded shadow">
+  <h3 class="font-bold">Total</h3>
+  <p class="text-2xl">${total}</p>
+</div>
+<div class="bg-white p-4 rounded shadow">
+  <h3 class="font-bold text-green-600">REAL</h3>
+  <p class="text-2xl">${real}</p>
+</div>
+<div class="bg-white p-4 rounded shadow">
+  <h3 class="font-bold">% REAL</h3>
+  <p class="text-2xl">${percent}%</p>
+</div>`;
 </script>
 </body>
 </html>

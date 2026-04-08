@@ -1,122 +1,78 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard – Index</title>
+  <meta charset="UTF-8" />
+  <title>Dashboard UO Lisboa - E-REDES</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-50">
-
-<header class="bg-gray-800 text-yellow-400 p-4 flex justify-between">
-  <h1 class="font-bold">Dashboard UO Lisboa</h1>
-  <label class="bg-yellow-400 text-black px-4 py-2 rounded cursor-pointer font-bold">
-    Carregar CSV
-    <input type="file" id="csvInput" accept=".csv" class="hidden">
-  </label>
-</header>
-
-<main class="p-6 space-y-4">
-  <div id="msg" class="text-sm"></div>
-
-  <div id="metrics" class="grid grid-cols-3 gap-4 hidden">
-    <div class="bg-white p-4 shadow rounded">
-      <div class="text-gray-500 text-xs">Alterações de estado</div>
-      <div id="altCount" class="text-2xl font-bold"></div>
-    </div>
-    <div class="bg-white p-4 shadow rounded">
-      <div class="text-gray-500 text-xs">% ordens com alterações</div>
-      <div id="altPct" class="text-2xl font-bold"></div>
-    </div>
-    <div class="bg-white p-4 shadow rounded">
-      <div class="text-gray-500 text-xs">Ordens REAL</div>
-      <div id="realCount" class="text-2xl font-bold"></div>
+  <!-- HEADER -->
+  <div class="bg-gray-800 shadow-md mb-6 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex gap-4">
+      <a href="./" class="px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold">🏠 Dashboard</a>
+      <a href="./criticas.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold">🚨 Ordens Críticas</a>
+      <a href="./relatorio.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold">📊 Relatório</a>
+      <a href="./interrupcoes.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold">⚡ Interrupções</a>
     </div>
   </div>
 
-  <div class="space-x-4">
-    <a href="criticas.html" class="underline">Críticas</a>
-    <a href="relatorio.html" class="underline">Relatório</a>
+  <div class="max-w-4xl mx-auto p-6">
+    <div class="bg-black border-4 border-yellow-400 rounded-lg p-6 mb-6">
+      <h1 class="text-3xl font-bold text-yellow-400">Dashboard UO Lisboa</h1>
+      <p id="statusMsg" class="text-yellow-300 mt-2 text-sm">
+        ⚠️ Nenhum CSV carregado
+      </p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-xl font-bold mb-4">📂 Carregar CSV diário</h2>
+      <input type="file" id="csvFile" accept=".csv"
+        class="block w-full border border-gray-300 rounded p-2" />
+    </div>
   </div>
-</main>
 
 <script>
-const DB = 'uoLisboaDB';
-const STORE = 'data';
+function normalizeStatus(status) {
+  if (!status) return null;
+  status = status.toUpperCase().trim();
+  if (status === "REAL NEFE") return null;
+  if (status startsWith("ANUL")) return null;
+  if (status === "REAL") return "REAL";
+  return status;
+}
 
-const COL_OT = 'OT';
-const COL_STATUS = 'STATUS';
-const COL_PRESTADOR = 'PRESTADOR';
-
-const IGNORE_STATUS = ['REAL NEFE', 'REAL ANUL'];
-
-function openDB() {
-  return new Promise(res => {
-    const r = indexedDB.open(DB, 1);
-    r.onupgradeneeded = () => r.result.createObjectStore(STORE, { keyPath: 'k' });
-    r.onsuccess = () => res(r.result);
+function parseCSV(content) {
+  const lines = content.split(/\r?\n/).filter(l => l.trim() !== "");
+  const headers = lines[0].split(";").map(h => h.trim());
+  return lines.slice(1).map(line => {
+    const cols = line.split(";");
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (cols[i] || "").trim());
+    obj.status_normalizado = normalizeStatus(obj.STATUS || obj.status);
+    return obj;
   });
 }
 
-function parseCSV(t) {
-  const [h, ...r] = t.split(/\r?\n/).filter(l => l.trim());
-  const H = h.split(',');
-  return r.map(l => {
-    const o = {};
-    l.split(',').forEach((v,i)=>o[H[i]]=v?.trim());
-    return o;
-  });
-}
+document.getElementById("csvFile").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-function isValidStatus(s) {
-  if (!s) return false;
-  if (IGNORE_STATUS.includes(s)) return false;
-  return true;
-}
-
-function isReal(s) {
-  return s?.startsWith('REAL') && s !== 'REAL NEFE';
-}
-
-document.getElementById('csvInput').addEventListener('change', async e => {
-  const text = await e.target.files[0].text();
-  const raw = parseCSV(text);
-  const data = raw.filter(r => isValidStatus(r[COL_STATUS]));
-
-  const db = await openDB();
-  db.transaction(STORE,'readwrite').objectStore(STORE).put({k:'csv', v:data});
-
-  // ---- métricas ----
-  const byOT = {};
-  data.forEach(r => {
-    const ot = r[COL_OT];
-    if (!byOT[ot]) byOT[ot] = [];
-    byOT[ot].push(r[COL_STATUS]);
-  });
-
-  let alt = 0;
-  let otsComAlt = 0;
-
-  Object.values(byOT).forEach(states => {
-    let changes = 0;
-    for (let i=1;i<states.length;i++) {
-      if (states[i] !== states[i-1]) changes++;
-    }
-    if (changes > 0) otsComAlt++;
-    alt += changes;
-  });
-
-  const totalOT = Object.keys(byOT).length;
-  const realCount = data.filter(r => isReal(r[COL_STATUS])).length;
-
-  document.getElementById('altCount').textContent = alt;
-  document.getElementById('altPct').textContent =
-    totalOT ? ((otsComAlt/totalOT)*100).toFixed(1)+'%' : '0%';
-  document.getElementById('realCount').textContent = realCount;
-
-  document.getElementById('metrics').classList.remove('hidden');
-  document.getElementById('msg').innerHTML =
-    `<span class="text-green-700 font-bold">CSV carregado com sucesso</span> (${data.length} linhas)`;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const data = parseCSV(reader.result);
+    localStorage.setItem("dashboardData", JSON.stringify({
+      timestamp: new Date().toISOString(),
+      total: data.length,
+      dados: data
+    }));
+    document.getElementById("statusMsg").innerText =
+      "✅ CSV carregado com sucesso às " + new Date().toLocaleString("pt-PT");
+  };
+  reader.readAsText(file, "UTF-8");
 });
 </script>
 </body>
 </html>
+``

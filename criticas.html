@@ -2,59 +2,39 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>Críticas</title>
+  <title>Ordens Críticas</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 p-6">
+<body class="bg-gray-50">
 
-<h1 class="text-xl font-bold mb-4">REAL por Prestador</h1>
-
-<button onclick="exportCSV()" class="mb-4 bg-gray-800 text-white px-4 py-2 rounded">
-  Exportar Excel
-</button>
-
-<table class="bg-white shadow rounded w-full text-sm">
-  <thead class="bg-gray-200">
-    <tr><th class="p-2">Prestador</th><th class="p-2">REAL</th></tr>
-  </thead>
-  <tbody id="tb"></tbody>
-</table>
+<div class="max-w-7xl mx-auto p-6">
+  <h1 class="text-3xl font-bold mb-4">🚨 Ordens Críticas</h1>
+  <table class="w-full bg-white rounded shadow">
+    <thead class="bg-gray-200">
+      <tr>
+        <th class="p-2 text-left">Ordem</th>
+        <th class="p-2 text-left">Concelho</th>
+        <th class="p-2 text-left">Estado</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
 
 <script>
-const COL_STATUS = 'STATUS';
-const COL_PRESTADOR = 'PRESTADOR';
+const store = JSON.parse(localStorage.getItem("dashboardData") || "{}");
+const dados = store.dados || [];
 
-function openDB(){return new Promise(r=>{const d=indexedDB.open('uoLisboaDB',1);d.onsuccess=()=>r(d.result);});}
-function isReal(s){return s?.startsWith('REAL') && s!=='REAL NEFE';}
+const criticas = dados.filter(o =>
+  o.status_normalizado && o.status_normalizado !== "REAL"
+);
 
-let tableData = [];
-
-(async ()=>{
-  const db = await openDB();
-  const req = db.transaction('data').objectStore('data').get('csv');
-  req.onsuccess = () => {
-    const data = req.result.v;
-    const map = {};
-    data.forEach(r=>{
-      if (isReal(r[COL_STATUS])) {
-        const p = r[COL_PRESTADOR] || 'N/D';
-        map[p]=(map[p]||0)+1;
-      }
-    });
-    tableData = Object.entries(map);
-    document.getElementById('tb').innerHTML =
-      tableData.map(([p,c])=>`<tr><td class="p-2">${p}</td><td class="p-2">${c}</td></tr>`).join('');
-  };
-})();
-
-function exportCSV(){
-  let csv = 'Prestador,REAL\n';
-  tableData.forEach(r=>csv+=r.join(',')+'\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='real_por_prestador.csv';
-  a.click();
-}
+document.getElementById("tbody").innerHTML = criticas.map(o => `
+<tr class="border-b">
+  <td class="p-2">${o.ORDEM || o.ordem}</td>
+  <td class="p-2">${o.CONCELHO || ""}</td>
+  <td class="p-2 text-red-600 font-bold">${o.status_normalizado}</td>
+</tr>`).join("");
 </script>
 </body>
 </html>

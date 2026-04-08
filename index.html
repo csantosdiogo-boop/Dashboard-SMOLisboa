@@ -7,45 +7,77 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-50">
-  <!-- HEADER -->
-  <div class="bg-gray-800 shadow-md mb-6 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-3 flex gap-4">
-      <a href="./" class="px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold">🏠 Dashboard</a>
-      <a href="./criticas.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold">🚨 Ordens Críticas</a>
-      <a href="./relatorio.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold">📊 Relatório</a>
-      <a href="./interrupcoes.html" class="px-4 py-2 text-yellow-400 hover:bg-gray-700 rounded-lg font-bold">⚡ Interrupções</a>
-    </div>
+<body class="bg-gray-100">
+
+<!-- HEADER -->
+<div class="bg-slate-800 shadow-md sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex gap-3">
+    <a href="./index.html" class="bg-yellow-400 text-black px-4 py-2 rounded-lg font-bold">
+      🏠 Dashboard
+    </a>
+    <a href="./criticas.html" class="text-yellow-400 px-4 py-2 font-bold hover:bg-slate-700 rounded-lg">
+      🚨 Ordens Críticas
+    </a>
+    <a href="./relatorio.html" class="text-yellow-400 px-4 py-2 font-bold hover:bg-slate-700 rounded-lg">
+      📊 Relatório
+    </a>
+    <a href="./interrupcoes.html" class="text-yellow-400 px-4 py-2 font-bold hover:bg-slate-700 rounded-lg">
+      ⚡ Interrupções
+    </a>
+  </div>
+</div>
+
+<!-- CONTEÚDO -->
+<div class="max-w-7xl mx-auto p-6">
+
+  <!-- CARD PRINCIPAL -->
+  <div class="bg-black border-4 border-yellow-400 rounded-xl p-6 mb-6">
+    <h1 class="text-3xl font-bold text-yellow-400 mb-2">
+      Dashboard UO Lisboa
+    </h1>
+    <p id="estadoCarga" class="text-yellow-300 text-sm">
+      ⚠️ Nenhum CSV carregado
+    </p>
   </div>
 
-  <div class="max-w-4xl mx-auto p-6">
-    <div class="bg-black border-4 border-yellow-400 rounded-lg p-6 mb-6">
-      <h1 class="text-3xl font-bold text-yellow-400">Dashboard UO Lisboa</h1>
-      <p id="statusMsg" class="text-yellow-300 mt-2 text-sm">
-        ⚠️ Nenhum CSV carregado
-      </p>
-    </div>
+  <!-- UPLOAD -->
+  <div class="bg-white rounded-xl shadow p-6 mb-6">
+    <h2 class="text-xl font-bold mb-4">📂 Carregar CSV diário</h2>
 
-    <div class="bg-white rounded-lg shadow-lg p-6">
-      <h2 class="text-xl font-bold mb-4">📂 Carregar CSV diário</h2>
-      <input type="file" id="csvFile" accept=".csv"
-        class="block w-full border border-gray-300 rounded p-2" />
-    </div>
+    <input
+      type="file"
+      id="csvFile"
+      accept=".csv"
+      class="block w-full border border-gray-300 rounded-lg p-2"
+    />
+
+    <p class="text-gray-500 text-sm mt-2">
+      O último CSV carregado fica sempre guardado e visível para toda a equipa.
+    </p>
   </div>
+
+  <!-- KPIs SIMPLES (exemplo base) -->
+  <div id="kpis" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+
+</div>
 
 <script>
+// -------- UTILIDADES --------
 function normalizeStatus(status) {
   if (!status) return null;
   status = status.toUpperCase().trim();
+
   if (status === "REAL NEFE") return null;
-  if (status startsWith("ANUL")) return null;
+  if (status.startsWith("ANUL")) return null;
   if (status === "REAL") return "REAL";
+
   return status;
 }
 
-function parseCSV(content) {
-  const lines = content.split(/\r?\n/).filter(l => l.trim() !== "");
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
   const headers = lines[0].split(";").map(h => h.trim());
+
   return lines.slice(1).map(line => {
     const cols = line.split(";");
     const obj = {};
@@ -55,24 +87,71 @@ function parseCSV(content) {
   });
 }
 
+// -------- RENDER --------
+function renderDashboard(dataStore) {
+  const estado = document.getElementById("estadoCarga");
+  const kpis = document.getElementById("kpis");
+
+  if (!dataStore || !dataStore.dados || dataStore.dados.length === 0) {
+    estado.innerText = "⚠️ Nenhum CSV carregado";
+    kpis.innerHTML = "";
+    return;
+  }
+
+  const dados = dataStore.dados;
+  const total = dados.length;
+  const real = dados.filter(o => o.status_normalizado === "REAL").length;
+  const restantes = total - real;
+  const percent = total ? ((real / total) * 100).toFixed(1) : 0;
+
+  estado.innerText =
+    "📅 Última atualização: " +
+    new Date(dataStore.timestamp).toLocaleString("pt-PT");
+
+  kpis.innerHTML = `
+    <div class="bg-white rounded-xl shadow p-4">
+      <h3 class="text-sm font-bold text-gray-500">Total</h3>
+      <p class="text-3xl font-bold">${total}</p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4">
+      <h3 class="text-sm font-bold text-green-600">REAL</h3>
+      <p class="text-3xl font-bold text-green-600">${real}</p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4">
+      <h3 class="text-sm font-bold">% REAL</h3>
+      <p class="text-3xl font-bold">${percent}%</p>
+    </div>
+  `;
+}
+
+// -------- LOAD INICIAL --------
+const stored = localStorage.getItem("dashboardData");
+if (stored) {
+  renderDashboard(JSON.parse(stored));
+}
+
+// -------- UPLOAD CSV --------
 document.getElementById("csvFile").addEventListener("change", e => {
   const file = e.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
   reader.onload = () => {
-    const data = parseCSV(reader.result);
-    localStorage.setItem("dashboardData", JSON.stringify({
+    const dados = parseCSV(reader.result);
+
+    const store = {
       timestamp: new Date().toISOString(),
-      total: data.length,
-      dados: data
-    }));
-    document.getElementById("statusMsg").innerText =
-      "✅ CSV carregado com sucesso às " + new Date().toLocaleString("pt-PT");
+      dados
+    };
+
+    localStorage.setItem("dashboardData", JSON.stringify(store));
+    renderDashboard(store);
   };
+
   reader.readAsText(file, "UTF-8");
 });
 </script>
+
 </body>
 </html>
 ``
